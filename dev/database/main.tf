@@ -16,5 +16,5 @@ resource "aws_db_instance" "database_instance" {
 
 resource "aws_db_subnet_group" "my_db_subnet_group" {
   name       = "my-db-subnet-group"
-  subnet_ids = tolist([subnet_id])
+  subnet_ids = [local.subnet_id]
 }
