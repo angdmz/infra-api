@@ -6,7 +6,7 @@ locals {
 # Create a security group for the ECS cluster
 resource "aws_security_group" "ecs_security_group" {
   name_prefix = "ecs_sg_"
-  vpc_id = network_id
+  vpc_id = local.network_id
 
   ingress {
     from_port = 0
@@ -74,6 +74,6 @@ resource "aws_autoscaling_group" "ecs_autoscaling_group" {
   }
   min_size = 1
   max_size = 3
-  vpc_zone_identifier = [subnet_id]
+  vpc_zone_identifier = [local.subnet_id]
   target_group_arns = []
 }
