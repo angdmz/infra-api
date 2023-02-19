@@ -43,7 +43,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "ecs_cluster"
 }
-n
+
 
 # Create an EC2 launch template for the ECS instances
 resource "aws_launch_template" "ecs_launch_template" {
