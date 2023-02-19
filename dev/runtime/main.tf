@@ -43,6 +43,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "ecs_cluster"
 }
+n
 
 # Create an EC2 launch template for the ECS instances
 resource "aws_launch_template" "ecs_launch_template" {
@@ -57,22 +58,6 @@ resource "aws_launch_template" "ecs_launch_template" {
       volume_size = 10
       volume_type = "gp2"
     }
-  }
-
-  iam_instance_profile {
-    name = "my-instance-profile"
-    policy = jsonencode({
-      Version = "2012-10-17"
-      Statement = [
-        {
-          Effect   = "Allow"
-          Action   = [
-            "ec2:DescribeVpcClassicLink"
-          ]
-          Resource = "*"
-        }
-      ]
-    })
   }
 }
 
