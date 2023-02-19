@@ -39,6 +39,31 @@ resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
   role = aws_iam_role.ecs_task_role.name
 }
 
+# Attach the AWS managed policy for ECS tasks to the IAM role
+resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  role = aws_iam_role.ecs_task_role.name
+}
+
+resource "aws_iam_role_policy" "ec2_read_classic_link" {
+  name   = "ec2_read_classic_link"
+  role   = aws_iam_role.ecs_task_role.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "VisualEditor0"
+        Effect    = "Allow"
+        Action    = [
+          "ec2:DescribeVpcClassicLink"
+        ]
+        Resource  = "*"
+      }
+    ]
+  })
+}
+
 # Create an ECS cluster
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "ecs_cluster"
