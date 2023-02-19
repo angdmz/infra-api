@@ -58,11 +58,6 @@ resource "aws_launch_template" "ecs_launch_template" {
       volume_type = "gp2"
     }
   }
-
-  user_data = <<-EOF
-              #!/bin/bash
-              echo ECS_CLUSTER=${aws_ecs_cluster.ecs_cluster.name} >> /etc/ecs/ecs.config
-              EOF
 }
 
 # Create an autoscaling group for the ECS instances
