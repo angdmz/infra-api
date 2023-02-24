@@ -3,73 +3,110 @@ locals {
   subnet_id = var.subnet_id
 }
 
-# Create a security group for the ECS cluster
-resource "aws_security_group" "ecs_security_group" {
-  name_prefix = "ecs_sg_"
-  vpc_id = local.network_id
+resource "aws_security_group" "ecs_sg" {
+  vpc_id      = local.network_id
 
   ingress {
-    from_port = 0
-    to_port = 65535
-    protocol = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    cidr_blocks     = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    cidr_blocks     = ["0.0.0.0/0"]
   }
 }
 
-# Create an IAM role for ECS tasks
-resource "aws_iam_role" "ecs_task_role" {
-  name = "ecs_task_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-}
+data "aws_iam_policy_document" "ecs_agent" {
+  statement {
+    actions = ["sts:AssumeRole"]
 
-# Attach the AWS managed policy for ECS tasks to the IAM role
-resource "aws_iam_role_policy_attachment" "ecs_task_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role = aws_iam_role.ecs_task_role.name
-}
-
-# Create an ECS cluster
-resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "ecs_cluster"
-}
-
-
-# Create an EC2 launch template for the ECS instances
-resource "aws_launch_template" "ecs_launch_template" {
-  name_prefix = "ecs_launch_template_"
-
-  image_id = "ami-0f7919c1b6007a0bc" # Amazon Linux 2 AMI
-  instance_type = "t2.micro"
-
-  block_device_mappings {
-    device_name = "/dev/xvda"
-    ebs {
-      volume_size = 10
-      volume_type = "gp2"
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
     }
   }
 }
 
-# Create an autoscaling group for the ECS instances
-resource "aws_autoscaling_group" "ecs_autoscaling_group" {
-  name_prefix = "ecs_asg_"
-  launch_template {
-    id = aws_launch_template.ecs_launch_template.id
-    version = "$Latest"
-  }
-  min_size = 1
-  max_size = 3
-  vpc_zone_identifier = [local.subnet_id]
-  target_group_arns = []
+resource "aws_iam_role" "ecs_agent" {
+  name               = "ecs-agent"
+  assume_role_policy = data.aws_iam_policy_document.ecs_agent.json
+}
+
+
+resource "aws_iam_role_policy_attachment" "ecs_agent" {
+  role       = "aws_iam_role.ecs_agent.name"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
+}
+
+resource "aws_iam_instance_profile" "ecs_agent" {
+  name = "ecs-agent"
+  role = aws_iam_role.ecs_agent.name
+}
+
+
+resource "aws_launch_configuration" "ecs_launch_config" {
+  image_id             = "ami-094d4d00fd7462815"
+  iam_instance_profile = aws_iam_instance_profile.ecs_agent.name
+  security_groups      = [aws_security_group.ecs_sg.id]
+  user_data            = "#!/bin/bash\necho ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config"
+  instance_type        = "t2.micro"
+}
+
+resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
+  name                      = "asg"
+  vpc_zone_identifier       = [local.subnet_id]
+  launch_configuration      = aws_launch_configuration.ecs_launch_config.name
+
+  desired_capacity          = 2
+  min_size                  = 1
+  max_size                  = 10
+  health_check_grace_period = 300
+  health_check_type         = "EC2"
+}
+
+
+resource "aws_ecr_repository" "worker" {
+  name  = "worker"
+}
+
+
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name  = "my-cluster"
+}
+
+
+resource "aws_ecs_task_definition" "task_definition" {
+  family                = "worker"
+  container_definitions = jsonencode(
+    [
+      {
+        essential : true,
+        memory : 512,
+        name : "worker",
+        cpu : 2,
+        image : "hello-world:latest",
+        environment : []
+      }
+    ]
+  )
+}
+
+
+resource "aws_ecs_service" "worker" {
+  name            = "worker"
+  cluster         = aws_ecs_cluster.ecs_cluster.id
+  task_definition = aws_ecs_task_definition.task_definition.arn
+  desired_count   = 2
 }
