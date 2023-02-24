@@ -11,19 +11,12 @@ resource "aws_vpc" "network" {
 
 resource "aws_subnet" "subnet" {
   vpc_id = aws_vpc.network.id
-  cidr_block = "10.0.1.0/24"
+  cidr_block = "10.1.0.0/22"
 
   tags = {
     Name = "subnet"
   }
 }
-
-
-resource "aws_subnet" "pub_subnet" {
-  vpc_id                  = aws_vpc.network.id
-  cidr_block              = "10.1.0.0/22"
-}
-
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.network.id
 }
@@ -39,6 +32,6 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "route_table_association" {
-  subnet_id      = aws_subnet.pub_subnet.id
+  subnet_id      = aws_subnet.subnet.id
   route_table_id = aws_route_table.public.id
 }
