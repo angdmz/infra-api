@@ -7,6 +7,6 @@ variable "aws_secret_key" {
 }
 
 variable "aws_region" {
-  default = "sa-east-1"
+  default = "us-east-2"
   description = "Amazon region"
 }
