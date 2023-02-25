@@ -39,20 +39,20 @@ data "aws_iam_policy_document" "ecs_agent" {
   }
 }
 
-resource "aws_iam_role" "ecs_agent" {
+resource "aws_iam_role" "ecs_agent_role" {
   name               = "ecs-agent-infra-api-dev"
   assume_role_policy = data.aws_iam_policy_document.ecs_agent.json
 }
 
 
-resource "aws_iam_role_policy_attachment" "ecs_agent" {
-  role       = aws_iam_role.ecs_agent.name
+resource "aws_iam_role_policy_attachment" "ecs_agent_attachment" {
+  role       = aws_iam_role.ecs_agent_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
 resource "aws_iam_instance_profile" "ecs_agent" {
   name = "ecs-agent-infra-api-dev"
-  role = aws_iam_role.ecs_agent.name
+  role = aws_iam_role.ecs_agent_role.name
 }
 
 
@@ -77,7 +77,7 @@ resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
 }
 
 
-resource "aws_ecr_repository" "worker" {
+resource "aws_ecr_repository" "repository" {
   name  = "infra-api-dev-repository"
 }
 
@@ -104,7 +104,7 @@ resource "aws_ecs_task_definition" "task_definition" {
 }
 
 
-resource "aws_ecs_service" "worker" {
+resource "aws_ecs_service" "worker_ecs_service" {
   name            = "worker"
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.task_definition.arn
