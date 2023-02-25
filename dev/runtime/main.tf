@@ -80,3 +80,33 @@ resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
 resource "aws_ecr_repository" "repository" {
   name  = "infra-api-dev-repository"
 }
+
+
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name  = "infra-api-dev-cluster"
+}
+
+
+resource "aws_ecs_task_definition" "task_definition" {
+  family                = "runtimes"
+  container_definitions = jsonencode(
+    [
+      {
+        essential : true,
+        memory : 512,
+        name : "worker",
+        cpu : 2,
+        image : "hello-world:latest",
+        environment : []
+      }
+    ]
+  )
+}
+
+
+resource "aws_ecs_service" "worker_ecs_service" {
+  name            = "runtimes"
+  cluster         = aws_ecs_cluster.ecs_cluster.id
+  task_definition = aws_ecs_task_definition.task_definition.arn
+  desired_count   = 2
+}
