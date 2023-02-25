@@ -11,9 +11,9 @@ resource "aws_db_instance" "database_instance" {
   engine               = "postgres"
   engine_version       = "12.7"
   instance_class       = "db.t2.micro"
-  db_name              = "my-db-instance"
-  username             = "my-db-username"
-  password             = "my-db-password"
+  db_name              = "db"
+  username             = "user"
+  password             = "pass"
   db_subnet_group_name = aws_db_subnet_group.my_db_subnet_group.name
   vpc_security_group_ids    = [aws_security_group.rds_sg.id, local.runtime_security_id]
 }
