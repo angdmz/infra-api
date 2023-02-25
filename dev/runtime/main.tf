@@ -88,7 +88,7 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 
 
 resource "aws_ecs_task_definition" "task_definition" {
-  family                = "worker"
+  family                = "runtimes"
   container_definitions = jsonencode(
     [
       {
@@ -105,7 +105,7 @@ resource "aws_ecs_task_definition" "task_definition" {
 
 
 resource "aws_ecs_service" "worker_ecs_service" {
-  name            = "worker"
+  name            = "runtimes"
   cluster         = aws_ecs_cluster.ecs_cluster.id
   task_definition = aws_ecs_task_definition.task_definition.arn
   desired_count   = 2
