@@ -12,11 +12,19 @@ resource "aws_vpc" "network" {
 resource "aws_subnet" "subnet" {
   vpc_id = aws_vpc.network.id
   cidr_block = "10.0.1.0/24"
-
   tags = {
     Name = "subnet"
   }
 }
+
+
+resource "aws_subnet" "rds_subnet" {
+  vpc_id = aws_vpc.network.id
+  cidr_block = "10.0.1.0/24"
+  availability_zone = "us-east-1b"
+}
+
+
 resource "aws_internet_gateway" "internet_gateway" {
   vpc_id = aws_vpc.network.id
 }
