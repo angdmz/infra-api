@@ -1,6 +1,8 @@
 locals {
   network_id = var.network_id
-  subnet_id = var.subnet_id
+  subnet_az1_id = var.subnet_az1_id
+  subnet_az2_id = var.subnet_az2_id
+  subnet_az3_id = var.subnet_az3_id
   runtime_security_id = var.runtime_security_id
 }
 
@@ -18,7 +20,7 @@ resource "aws_db_instance" "database_instance" {
 
 resource "aws_db_subnet_group" "my_db_subnet_group" {
   name       = "my-db-subnet-group"
-  subnet_ids = [local.subnet_id]
+  subnet_ids = [local.subnet_az1_id, local.subnet_az2_id, local.subnet_az3_id]
 }
 
 resource "aws_security_group" "rds_sg" {
