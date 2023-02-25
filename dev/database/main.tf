@@ -12,8 +12,8 @@ resource "aws_db_instance" "database_instance" {
   engine_version       = "12.7"
   instance_class       = "db.t2.micro"
   db_name              = "main"
-  username             = "user"
-  password             = "pass"
+  username             = "mainuser"
+  password             = "mainpass"
   db_subnet_group_name = aws_db_subnet_group.my_db_subnet_group.name
   vpc_security_group_ids    = [aws_security_group.rds_sg.id, local.runtime_security_id]
 }
