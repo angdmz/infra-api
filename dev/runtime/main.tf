@@ -40,7 +40,7 @@ data "aws_iam_policy_document" "ecs_agent" {
 }
 
 resource "aws_iam_role" "ecs_agent" {
-  name               = "ecs-agent"
+  name               = "ecs-agent-infra-api-dev"
   assume_role_policy = data.aws_iam_policy_document.ecs_agent.json
 }
 
@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "ecs_agent" {
 }
 
 resource "aws_iam_instance_profile" "ecs_agent" {
-  name = "ecs-agent"
+  name = "ecs-agent-infra-api-dev"
   role = aws_iam_role.ecs_agent.name
 }
 
@@ -78,12 +78,12 @@ resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
 
 
 resource "aws_ecr_repository" "worker" {
-  name  = "worker"
+  name  = "infra-api-dev-repository"
 }
 
 
 resource "aws_ecs_cluster" "ecs_cluster" {
-  name  = "my-cluster"
+  name  = "infra-api-dev-cluster"
 }
 
 
