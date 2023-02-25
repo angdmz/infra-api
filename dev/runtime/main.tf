@@ -56,7 +56,7 @@ resource "aws_iam_instance_profile" "ecs_agent" {
 }
 
 
-resource "aws_launch_configurationn" "ecs_launch_config" {
+resource "aws_launch_configuration" "ecs_launch_config" {
   image_id             = "ami-094d4d00fd7462815"
   iam_instance_profile = aws_iam_instance_profile.ecs_agent.name
   security_groups      = [aws_security_group.ecs_sg.id]
