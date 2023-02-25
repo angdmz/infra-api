@@ -28,7 +28,7 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_agent" {
+data "aws_iam_policy_document" "ecs_agent_data" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "ecs_agent" {
 
 resource "aws_iam_role" "ecs_agent_role" {
   name               = "ecs-agent-infra-api-dev"
-  assume_role_policy = data.aws_iam_policy_document.ecs_agent.json
+  assume_role_policy = data.aws_iam_policy_document.ecs_agent_data.json
 }
 
 
