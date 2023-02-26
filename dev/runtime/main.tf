@@ -82,19 +82,6 @@ resource "aws_launch_template" "ecs_launch_config" {
   instance_type = "t2.micro"
 }
 
-resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
-  name                      = "asg"
-  vpc_zone_identifier       = [local.subnet_id]
-  launch_template {
-    name = aws_launch_template.ecs_launch_config.name
-  }
-  desired_capacity          = 2
-  min_size                  = 1
-  max_size                  = 10
-  health_check_grace_period = 300
-  health_check_type         = "EC2"
-}
-
 
 resource "aws_ecr_repository" "repository" {
   name  = "infra-api-dev-repository"
