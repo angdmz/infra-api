@@ -56,8 +56,24 @@ resource "aws_iam_instance_profile" "ecs_agent" {
 }
 
 
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["amazon"]
+}
+
 resource "aws_launch_template" "ecs_launch_config" {
-  image_id = "ami-0a990e28f8ba45061"
+  image_id = data.aws_ami.amazon_linux.id
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs_agent.name
   }
