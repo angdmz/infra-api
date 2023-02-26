@@ -73,7 +73,7 @@ data "aws_ami" "amazon_linux" {
 }
 
 resource "aws_launch_template" "ecs_launch_config" {
-  image_id = "ami-03dd1011b2501fbfd"
+  image_id = data.aws_ami.amazon_linux.id
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs_agent.name
   }
