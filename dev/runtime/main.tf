@@ -62,7 +62,7 @@ resource "aws_launch_template" "ecs_launch_config" {
     name = aws_iam_instance_profile.ecs_agent.name
   }
   vpc_security_group_ids = [aws_security_group.ecs_sg.id]
-  user_data = base64encode("#!/bin/bash\necho ECS_CLUSTER=my-cluster >> /etc/ecs/ecs.config")
+  user_data = base64encode("#!/bin/bash\necho ECS_CLUSTER=infra-api-dev-cluster >> /etc/ecs/ecs.config")
   instance_type = "t2.micro"
 }
 
