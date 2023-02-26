@@ -57,7 +57,7 @@ resource "aws_iam_instance_profile" "ecs_agent" {
 
 
 resource "aws_launch_template" "ecs_launch_config" {
-  image_id = "ami-094d4d00fd7462815"
+  image_id = "ami-0a990e28f8ba45061"
   iam_instance_profile {
     name = aws_iam_instance_profile.ecs_agent.name
   }
