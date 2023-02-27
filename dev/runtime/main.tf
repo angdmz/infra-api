@@ -79,7 +79,6 @@ resource "aws_launch_template" "ecs_launch_config" {
     arn = aws_iam_instance_profile.ecs_agent.arn
   }
   vpc_security_group_ids = [aws_security_group.ecs_sg.id]
-  associate_public_ip_address = true
   lifecycle {
     create_before_destroy = true
   }
