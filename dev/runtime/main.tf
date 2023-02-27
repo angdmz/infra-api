@@ -1,6 +1,7 @@
 locals {
   network_id = var.network_id
   subnet_id = var.subnet_id
+  cluster_name = "infra-api-dev-cluster"
 }
 
 resource "aws_security_group" "ecs_sg" {
@@ -28,57 +29,61 @@ resource "aws_security_group" "ecs_sg" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_agent_data" {
+
+data "aws_iam_policy_document" "ecs_agent" {
   statement {
     actions = ["sts:AssumeRole"]
-
     principals {
       type        = "Service"
       identifiers = ["ec2.amazonaws.com"]
     }
   }
 }
-
-resource "aws_iam_role" "ecs_agent_role" {
-  name               = "ecs-agent-infra-api-dev"
-  assume_role_policy = data.aws_iam_policy_document.ecs_agent_data.json
+resource "aws_iam_role" "ecs_agent" {
+  name               = "ecs-agent"
+  assume_role_policy = data.aws_iam_policy_document.ecs_agent.json
 }
 
-
-resource "aws_iam_role_policy_attachment" "ecs_agent_attachment" {
-  role       = aws_iam_role.ecs_agent_role.name
+resource "aws_iam_role_policy_attachment" "ecs_agent" {
+  role       = aws_iam_role.ecs_agent.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
+
 resource "aws_iam_instance_profile" "ecs_agent" {
-  name = "ecs-agent-infra-api-dev"
-  role = aws_iam_role.ecs_agent_role.name
+  name = "ecs-agent"
+  role = aws_iam_role.ecs_agent.name
 }
 
 
-data "aws_ami" "amazon_linux" {
+data "aws_ami" "aws_optimized_ecs" {
   most_recent = true
-
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*"]
+    values = ["amzn-ami*amazon-ecs-optimized"]
   }
-
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-
-  owners = ["amazon"]
+  owners = ["591542846629"] # AWS
 }
 
 resource "aws_launch_template" "ecs_launch_config" {
-  image_id = data.aws_ami.amazon_linux.id
+  image_id = data.aws_ami.aws_optimized_ecs.id
   iam_instance_profile {
-    name = aws_iam_instance_profile.ecs_agent.name
+    arn = aws_iam_instance_profile.ecs_agent.arn
   }
   vpc_security_group_ids = [aws_security_group.ecs_sg.id]
-  user_data = base64encode("#!/bin/bash\necho ECS_CLUSTER=infra-api-dev-cluster >> /etc/ecs/ecs.config")
+  associate_public_ip_address = true
+  lifecycle {
+    create_before_destroy = true
+  }
+  user_data = base64encode("#!/bin/bash\necho ECS_CLUSTER=${local.cluster_name} >> /etc/ecs/ecs.config")
   instance_type = "t2.micro"
 }
 
@@ -93,6 +98,13 @@ resource "aws_autoscaling_group" "failure_analysis_ecs_asg" {
   max_size                  = 10
   health_check_grace_period = 300
   health_check_type         = "EC2"
+  tag = [
+    {
+      key                 = "Name"
+      value               = local.cluster_name,
+      propagate_at_launch = true
+    }
+  ]
 }
 
 
