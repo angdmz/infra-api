@@ -30,7 +30,7 @@ resource "aws_security_group" "ecs_sg" {
 }
 
 
-data "aws_iam_policy_document" "ecs_agent" {
+data "aws_iam_policy_document" "ecs_agent_data" {
   statement {
     actions = ["sts:AssumeRole"]
     principals {
